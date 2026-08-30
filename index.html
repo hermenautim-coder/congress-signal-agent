@@ -46,6 +46,70 @@ h1{
   margin:13px 0;
 }
 
+/* ERKLÄRBEREICH */
+
+.info-card{
+  padding:0;
+  overflow:hidden;
+}
+
+.info-card summary{
+  cursor:pointer;
+  list-style:none;
+  padding:15px;
+  font-weight:800;
+}
+
+.info-card summary::-webkit-details-marker{
+  display:none;
+}
+
+.info-card summary::after{
+  content:'＋';
+  float:right;
+  color:var(--muted);
+}
+
+.info-card[open] summary::after{
+  content:'−';
+}
+
+.info-body{
+  padding:0 15px 15px;
+  line-height:1.5;
+}
+
+.info-body p{
+  margin:8px 0 12px;
+}
+
+.info-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0 14px;
+}
+
+.info-box{
+  background:var(--input);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:10px;
+}
+
+.info-box b{
+  display:block;
+  margin-bottom:3px;
+}
+
+.info-note{
+  border-top:1px solid #27324f;
+  padding-top:12px;
+  margin-top:12px;
+}
+
+/* TABS */
+
 .tabs{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -62,7 +126,9 @@ h1{
   font-weight:750;
 }
 
-.tab.active{background:#263252}
+.tab.active{
+  background:#263252;
+}
 
 .controls{
   display:grid;
@@ -130,7 +196,9 @@ button{
   margin-top:14px;
 }
 
-.value{margin-top:2px}
+.value{
+  margin-top:2px;
+}
 
 .section{
   margin-top:15px;
@@ -169,9 +237,12 @@ button{
   line-height:1.5;
 }
 
-.error{color:#ffb4b4}
+.error{
+  color:#ffb4b4;
+}
 
 @media(min-width:650px){
+
   .tabs{
     grid-template-columns:repeat(4,1fr);
   }
@@ -192,6 +263,7 @@ button{
 </head>
 
 <body>
+
 <main>
 
 <h1>Investment Signal Agent V4</h1>
@@ -200,52 +272,310 @@ button{
 Politiker · Corporate Insider · Fundamentals · Datenqualität
 </div>
 
+
+<!-- ERKLÄRUNG -->
+
+<details class="card info-card">
+
+  <summary>
+    Wie funktioniert die Bewertung?
+  </summary>
+
+  <div class="info-body">
+
+    <p>
+      Der Agent kombiniert mehrere voneinander unabhängige
+      öffentliche Signale zu einer <b>Gesamtbewertung von
+      0 bis 100 Punkten</b>.
+      Ein hoher Wert bedeutet, dass mehrere Datenebenen
+      gleichzeitig positiv ausfallen.
+      Der Score ist ein Research-Impuls und keine Kaufempfehlung.
+    </p>
+
+    <div class="section-title">
+      Berechnung des Gesamtscores
+    </div>
+
+    <div class="info-grid">
+
+      <div class="info-box">
+        <b>Politiker-Signal</b>
+        0–25 Punkte
+      </div>
+
+      <div class="info-box">
+        <b>Corporate Insider</b>
+        0–25 Punkte
+      </div>
+
+      <div class="info-box">
+        <b>Fundamentals / Earnings</b>
+        0–20 Punkte
+      </div>
+
+      <div class="info-box">
+        <b>Doppelsignal</b>
+        0–15 Punkte
+      </div>
+
+      <div class="info-box">
+        <b>Bewertung</b>
+        0–10 Punkte
+      </div>
+
+      <div class="info-box">
+        <b>Momentum / Marktstruktur</b>
+        0–5 Punkte
+      </div>
+
+    </div>
+
+    <p>
+      Danach können Punkte abgezogen werden, zum Beispiel
+      bei verspäteter Offenlegung, einem bereits stark
+      gestiegenen Kurs, schwachen Fundamentaldaten oder
+      widersprüchlicher Evidenz.
+    </p>
+
+    <p>
+      Dieselbe Information soll nicht mehrfach vollständig
+      in unterschiedlichen Kategorien gewertet werden.
+    </p>
+
+
+    <div class="section-title">
+      Welche Daten werden genutzt?
+    </div>
+
+    <p>
+      <b>Politiker-Käufe:</b>
+      Öffentlich gemeldete Aktiengeschäfte von
+      US-Kongressmitgliedern. Ausschuss- oder
+      Regulierungsnähe wird nur als Research-Kontext
+      berücksichtigt und nicht als Hinweis auf
+      nichtöffentliche Informationen.
+    </p>
+
+    <p>
+      <b>Corporate Insider:</b>
+      SEC Form 4. Positiv zählen nur echte Käufe mit
+      eigenem Kapital, insbesondere Transaction Code P.
+      Grants, Optionsausübungen, Gifts, Steuertransaktionen
+      und andere mechanische Vorgänge werden nicht als
+      positives Kaufsignal behandelt.
+    </p>
+
+    <p>
+      <b>Fundamentals:</b>
+      Unter anderem Umsatz- und Ergebnisentwicklung,
+      Operating Margin, Free Cash Flow, Guidance und
+      Earnings Momentum aus SEC- und Unternehmensdaten.
+      Fehlende Daten werden nicht automatisch positiv bewertet.
+    </p>
+
+    <p>
+      <b>Marktdaten:</b>
+      Kursentwicklung seit dem tatsächlichen
+      Transaktionsdatum, Bewertung und Momentum.
+      Ein Kursrückgang führt nicht automatisch zu einem Bonus.
+    </p>
+
+
+    <div class="section-title">
+      Confidence und Datenvollständigkeit
+    </div>
+
+    <p>
+      <b>Confidence 0–100</b> bewertet nicht die Aktie,
+      sondern die Verlässlichkeit der Datengrundlage.
+      Berücksichtigt werden unter anderem Quellenqualität,
+      Aktualität, Eindeutigkeit und Widerspruchsfreiheit.
+    </p>
+
+    <p>
+      <b>Datenvollständigkeit</b> zeigt, wie viel der für
+      die Bewertung benötigten Information tatsächlich
+      verfügbar war.
+    </p>
+
+
+    <div class="section-title">
+      Was ist ein Doppelsignal?
+    </div>
+
+    <p>
+      Ein Doppelsignal liegt vor, wenn beim selben Unternehmen
+      innerhalb von 30 Tagen sowohl ein relevanter
+      Politiker-Kauf als auch ein echter Corporate-Insider-Kauf
+      erkannt wird.
+    </p>
+
+    <p>
+      Diese Überschneidung erhöht die Research-Priorität,
+      ersetzt aber nicht die Prüfung von Fundamentals,
+      Bewertung und Risiken.
+    </p>
+
+
+    <div class="section-title">
+      Wann erfolgt ein ChatGPT-Alert?
+    </div>
+
+    <p>
+      <b>STARKES SIGNAL:</b>
+      Gesamtbewertung ab 75/100.
+    </p>
+
+    <p>
+      <b>DOPPELSIGNAL:</b>
+      Politiker- und Insider-Kauf zusammen sowie
+      Gesamtbewertung von 60–74/100.
+    </p>
+
+    <p>
+      <b>STARKES DOPPELSIGNAL:</b>
+      Doppelsignal und mindestens 75/100.
+    </p>
+
+
+    <div class="section-title">
+      Wie wird das Modell kontrolliert?
+    </div>
+
+    <p>
+      Die Performance der Signale wird über
+      7, 30, 90, 180 und 365 Tage beobachtet und
+      gegen SPY verglichen.
+    </p>
+
+    <div class="info-note muted">
+
+      Die Gewichtung wird nicht automatisch verändert.
+      Erst bei ausreichender Datenbasis werden mögliche
+      Anpassungen vorgeschlagen.
+
+      <br><br>
+
+      Die Bewertung dient ausschließlich als
+      Research-Unterstützung und stellt keine
+      individuelle Anlage- oder Kaufempfehlung dar.
+
+    </div>
+
+  </div>
+
+</details>
+
+
+<!-- TABS -->
+
 <div class="tabs">
-  <button class="tab active" data-tab="overview">Gesamtbewertung</button>
-  <button class="tab" data-tab="signals">Politiker-Käufe</button>
-  <button class="tab" data-tab="insiders">Insider-Käufe</button>
-  <button class="tab" data-tab="convergence">Doppelsignal</button>
+
+  <button class="tab active" data-tab="overview">
+    Gesamtbewertung
+  </button>
+
+  <button class="tab" data-tab="signals">
+    Politiker-Käufe
+  </button>
+
+  <button class="tab" data-tab="insiders">
+    Insider-Käufe
+  </button>
+
+  <button class="tab" data-tab="convergence">
+    Doppelsignal
+  </button>
+
 </div>
+
+
+<!-- FILTER -->
 
 <div class="card controls">
 
   <div class="field">
+
     <label>Ticker</label>
-    <input id="ticker" placeholder="optional, z. B. NVDA">
+
+    <input
+      id="ticker"
+      placeholder="optional, z. B. NVDA"
+    >
+
   </div>
 
-  <div class="field">
-    <label id="scoreLabel">Mindest-Gesamtscore</label>
-    <input id="score" type="number" min="0" max="100" value="0">
-  </div>
 
   <div class="field">
-    <label>Zeitraum</label>
+
+    <label id="scoreLabel">
+      Mindest-Gesamtscore
+    </label>
+
+    <input
+      id="score"
+      type="number"
+      min="0"
+      max="100"
+      value="0"
+    >
+
+  </div>
+
+
+  <div class="field">
+
+    <label>
+      Zeitraum
+    </label>
 
     <select id="days">
-      <option value="30">30 Tage</option>
-      <option value="90">90 Tage</option>
-      <option value="365">1 Jahr</option>
-      <option value="3650">Gesamte Historie</option>
+
+      <option value="30">
+        30 Tage
+      </option>
+
+      <option value="90">
+        90 Tage
+      </option>
+
+      <option value="365">
+        1 Jahr
+      </option>
+
+      <option value="3650">
+        Gesamte Historie
+      </option>
+
     </select>
+
   </div>
 
-  <button id="load">Daten laden</button>
+
+  <button id="load">
+    Daten laden
+  </button>
 
 </div>
 
-<div id="status" class="card muted">Lade Daten …</div>
+
+<div id="status" class="card muted">
+Lade Daten …
+</div>
 
 <div id="results"></div>
+
 
 <script>
 
 const API =
 'https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+document.getElementById(id);
 
 let activeTab='overview';
+
 
 const esc=s=>
 String(s??'')
@@ -254,6 +584,7 @@ String(s??'')
 .replaceAll('>','&gt;')
 .replaceAll('"','&quot;')
 .replaceAll("'","&#039;");
+
 
 const money=n=>
 n==null
@@ -264,22 +595,28 @@ n==null
 style:'currency',
 currency:'USD',
 maximumFractionDigits:0
-}).format(Number(n));
+}
+).format(Number(n));
+
 
 const numberFmt=n=>
 n==null
 ?'—'
-:new Intl.NumberFormat('en-US').format(Number(n));
+:new Intl.NumberFormat('en-US')
+.format(Number(n));
+
 
 const pct=n=>
 n==null
 ?'—'
 :Number(n).toFixed(1)+' %';
 
+
 const dt=v=>
 v
 ?new Date(v).toLocaleDateString('de-DE')
 :'—';
+
 
 function setTab(tab){
 
@@ -288,119 +625,211 @@ function setTab(tab){
   document
   .querySelectorAll('.tab')
   .forEach(btn=>{
+
     btn.classList.toggle(
       'active',
       btn.dataset.tab===tab
     );
+
   });
 
+
   if(tab==='overview'){
+
     $('score').disabled=false;
     $('score').min=0;
     $('score').max=100;
     $('score').value=0;
-    $('scoreLabel').textContent='Mindest-Gesamtscore';
+
+    $('scoreLabel').textContent=
+    'Mindest-Gesamtscore';
+
   }
 
+
   if(tab==='signals'){
+
     $('score').disabled=false;
     $('score').min=0;
     $('score').max=13;
     $('score').value=0;
-    $('scoreLabel').textContent='Mindestscore Politiker-Signal';
+
+    $('scoreLabel').textContent=
+    'Mindestscore Politiker-Signal';
+
   }
 
-  if(tab==='insiders'||tab==='convergence'){
+
+  if(
+    tab==='insiders' ||
+    tab==='convergence'
+  ){
+
     $('score').disabled=true;
-    $('scoreLabel').textContent='Score-Filter nicht nötig';
+
+    $('scoreLabel').textContent=
+    'Score-Filter nicht nötig';
+
   }
 
   loadData();
 }
 
+
 async function loadData(){
 
-  $('status').textContent='Lade Daten …';
+  $('status').textContent=
+  'Lade Daten …';
+
   $('results').innerHTML='';
 
-  const q=new URLSearchParams({
+
+  const q=
+  new URLSearchParams({
+
     api:activeTab,
     days:$('days').value
+
   });
 
-  const ticker=
-    $('ticker').value.trim().toUpperCase();
 
-  if(ticker)q.set('ticker',ticker);
+  const ticker=
+  $('ticker')
+  .value
+  .trim()
+  .toUpperCase();
+
+
+  if(ticker){
+
+    q.set(
+      'ticker',
+      ticker
+    );
+
+  }
+
 
   if(activeTab==='overview'){
+
     q.set(
       'min_combined',
       $('score').value||'0'
     );
+
   }
 
+
   if(activeTab==='signals'){
+
     q.set(
       'min_score',
       $('score').value||'0'
     );
+
   }
+
 
   try{
 
     const r=
-      await fetch(`${API}?${q.toString()}`);
+    await fetch(
+      `${API}?${q.toString()}`
+    );
+
 
     if(!r.ok){
 
       $('status').innerHTML=
+
       `<span class="error">
       API-Fehler (${r.status})
       </span>`;
 
       return;
+
     }
 
-    const j=await r.json();
-    const data=j.data||[];
+
+    const j=
+    await r.json();
+
+    const data=
+    j.data||[];
+
 
     $('status').innerHTML=
-      `<b>${data.length}</b> Einträge gefunden`;
 
-    if(activeTab==='overview')renderOverview(data);
-    if(activeTab==='signals')renderSignals(data);
-    if(activeTab==='insiders')renderInsiders(data);
-    if(activeTab==='convergence')renderConvergence(data);
+    `<b>${data.length}</b>
+    Einträge gefunden`;
+
+
+    if(activeTab==='overview')
+      renderOverview(data);
+
+    if(activeTab==='signals')
+      renderSignals(data);
+
+    if(activeTab==='insiders')
+      renderInsiders(data);
+
+    if(activeTab==='convergence')
+      renderConvergence(data);
 
   }
+
   catch(e){
 
     $('status').innerHTML=
+
     `<span class="error">
     Verbindungsfehler:
     ${esc(e.message||e)}
     </span>`;
 
   }
+
 }
+
 
 function renderOverview(data){
 
   $('results').innerHTML=
+
   data.map(x=>{
 
     let alertBadge='';
 
-    if(x.combined_score>=75 && x.overlap_30d){
-      alertBadge='<span class="badge">STARKES DOPPELSIGNAL</span>';
+
+    if(
+      x.combined_score>=75 &&
+      x.overlap_30d
+    ){
+
+      alertBadge=
+      '<span class="badge">STARKES DOPPELSIGNAL</span>';
+
     }
-    else if(x.combined_score>=75){
-      alertBadge='<span class="badge">STARKES SIGNAL</span>';
+
+    else if(
+      x.combined_score>=75
+    ){
+
+      alertBadge=
+      '<span class="badge">STARKES SIGNAL</span>';
+
     }
-    else if(x.overlap_30d && x.combined_score>=60){
-      alertBadge='<span class="badge">DOPPELSIGNAL</span>';
+
+    else if(
+      x.overlap_30d &&
+      x.combined_score>=60
+    ){
+
+      alertBadge=
+      '<span class="badge">DOPPELSIGNAL</span>';
+
     }
+
 
     return `
 
@@ -419,16 +848,19 @@ function renderOverview(data){
           </div>
 
           <span class="badge">
+
             ${
               x.quality_model_version==='v4'
               ?'V4'
               :'LEGACY'
             }
+
           </span>
 
           ${alertBadge}
 
         </div>
+
 
         <div class="score">
           ${esc(x.combined_score??0)}/100
@@ -436,48 +868,80 @@ function renderOverview(data){
 
       </div>
 
+
       <div class="grid">
 
+
         <div>
-          <div class="label">Priorität</div>
+
+          <div class="label">
+            Priorität
+          </div>
+
           <div class="value">
+
             ${esc(
               (x.combined_priority||'watch')
               .toUpperCase()
             )}
+
           </div>
+
         </div>
 
+
         <div>
-          <div class="label">Confidence</div>
+
+          <div class="label">
+            Confidence
+          </div>
+
           <div class="value">
+
             ${
               x.data_confidence==null
               ?'—'
               :esc(x.data_confidence)+'/100'
             }
+
           </div>
+
         </div>
 
+
         <div>
-          <div class="label">Datenvollständigkeit</div>
+
+          <div class="label">
+            Datenvollständigkeit
+          </div>
+
           <div class="value">
+
             ${
               x.data_completeness==null
               ?'—'
               :esc(x.data_completeness)+' %'
             }
+
           </div>
+
         </div>
 
+
         <div>
-          <div class="label">Letzte Aktivität</div>
+
+          <div class="label">
+            Letzte Aktivität
+          </div>
+
           <div class="value">
             ${dt(x.latest_activity_at)}
           </div>
+
         </div>
 
       </div>
+
 
       ${
         x.quality_model_version==='v4'
@@ -491,47 +955,84 @@ function renderOverview(data){
 
           <div class="factor-grid">
 
+
             <div class="factor">
-              <div class="label">Politiker</div>
+
+              <div class="label">
+                Politiker
+              </div>
+
               <div class="factor-score">
                 ${esc(x.politician_score??0)}/25
               </div>
+
             </div>
 
+
             <div class="factor">
-              <div class="label">Insider</div>
+
+              <div class="label">
+                Insider
+              </div>
+
               <div class="factor-score">
                 ${esc(x.insider_score??0)}/25
               </div>
+
             </div>
 
+
             <div class="factor">
-              <div class="label">Fundamentals</div>
+
+              <div class="label">
+                Fundamentals
+              </div>
+
               <div class="factor-score">
                 ${esc(x.fundamentals_score??0)}/20
               </div>
+
             </div>
 
+
             <div class="factor">
-              <div class="label">Doppelsignal</div>
+
+              <div class="label">
+                Doppelsignal
+              </div>
+
               <div class="factor-score">
                 ${esc(x.quality_convergence_score??0)}/15
               </div>
+
             </div>
 
+
             <div class="factor">
-              <div class="label">Bewertung</div>
+
+              <div class="label">
+                Bewertung
+              </div>
+
               <div class="factor-score">
                 ${esc(x.valuation_score??0)}/10
               </div>
+
             </div>
 
+
             <div class="factor">
-              <div class="label">Momentum</div>
+
+              <div class="label">
+                Momentum
+              </div>
+
               <div class="factor-score">
                 ${esc(x.momentum_score??0)}/5
               </div>
+
             </div>
+
 
           </div>
 
@@ -541,6 +1042,7 @@ function renderOverview(data){
         :''
       }
 
+
       <div class="section">
 
         <div class="section-title">
@@ -549,16 +1051,28 @@ function renderOverview(data){
 
         <div class="grid">
 
+
           <div>
-            <div class="label">Politiker</div>
+
+            <div class="label">
+              Politiker
+            </div>
+
             <div class="value">
               ${esc(x.politician||'—')}
             </div>
+
           </div>
 
+
           <div>
-            <div class="label">Politiker-Score</div>
+
+            <div class="label">
+              Politiker-Score
+            </div>
+
             <div class="value">
+
               ${
                 x.congressional_score==null
                 ?'Kein Signal'
@@ -566,40 +1080,68 @@ function renderOverview(data){
                  +'/'
                  +esc(x.congressional_score_max||12)
               }
+
             </div>
+
           </div>
 
+
           <div>
-            <div class="label">Insider</div>
+
+            <div class="label">
+              Insider
+            </div>
+
             <div class="value">
               ${esc(x.insider_name||'—')}
             </div>
+
           </div>
 
+
           <div>
-            <div class="label">Insider-Rolle</div>
+
+            <div class="label">
+              Insider-Rolle
+            </div>
+
             <div class="value">
               ${esc(x.insider_title||'—')}
             </div>
+
           </div>
 
+
           <div>
-            <div class="label">Insider-Kauf</div>
+
+            <div class="label">
+              Insider-Kauf
+            </div>
+
             <div class="value">
               ${money(x.insider_value_usd)}
             </div>
+
           </div>
 
+
           <div>
-            <div class="label">Doppelsignal</div>
+
+            <div class="label">
+              Doppelsignal
+            </div>
+
             <div class="value">
               ${x.overlap_30d?'JA':'Nein'}
             </div>
+
           </div>
+
 
         </div>
 
       </div>
+
 
       ${
         x.fundamentals_as_of_date
@@ -613,47 +1155,84 @@ function renderOverview(data){
 
           <div class="grid">
 
+
             <div>
-              <div class="label">Umsatzwachstum YoY</div>
+
+              <div class="label">
+                Umsatzwachstum YoY
+              </div>
+
               <div class="value">
                 ${pct(x.revenue_growth_yoy)}
               </div>
+
             </div>
 
+
             <div>
-              <div class="label">EPS-Wachstum YoY</div>
+
+              <div class="label">
+                EPS-Wachstum YoY
+              </div>
+
               <div class="value">
                 ${pct(x.eps_growth_yoy)}
               </div>
+
             </div>
 
+
             <div>
-              <div class="label">Operating Margin</div>
+
+              <div class="label">
+                Operating Margin
+              </div>
+
               <div class="value">
                 ${pct(x.operating_margin)}
               </div>
+
             </div>
 
+
             <div>
-              <div class="label">Free Cash Flow</div>
+
+              <div class="label">
+                Free Cash Flow
+              </div>
+
               <div class="value">
                 ${money(x.free_cash_flow)}
               </div>
+
             </div>
 
+
             <div>
-              <div class="label">Guidance</div>
+
+              <div class="label">
+                Guidance
+              </div>
+
               <div class="value">
                 ${esc(x.guidance_direction||'—')}
               </div>
+
             </div>
 
+
             <div>
-              <div class="label">Stand</div>
+
+              <div class="label">
+                Stand
+              </div>
+
               <div class="value">
                 ${dt(x.fundamentals_as_of_date)}
               </div>
+
             </div>
+
 
           </div>
 
@@ -662,6 +1241,7 @@ function renderOverview(data){
         `
         :''
       }
+
 
       ${
         x.positive_summary
@@ -681,6 +1261,7 @@ function renderOverview(data){
         :''
       }
 
+
       ${
         x.risk_summary
         ?`
@@ -699,275 +1280,14 @@ function renderOverview(data){
         :''
       }
 
+
     </article>
 
     `;
 
   }).join('')
+
   ||
-  '<div class="card muted">Keine Gesamtbewertungen gefunden.</div>';
 
-}
-
-function renderSignals(data){
-
-  $('results').innerHTML=
-  data.map(x=>`
-
-  <article class="item">
-
-    <div class="top">
-
-      <div>
-        <div class="ticker">
-          ${esc(x.ticker)}
-        </div>
-
-        <div class="muted">
-          ${esc(x.company_name||'')}
-        </div>
-
-        <span class="badge">
-          POLITIKER-KAUF
-        </span>
-      </div>
-
-      <div class="score">
-        ${esc(x.score)}/${esc(x.score_max||12)}
-      </div>
-
-    </div>
-
-    <div class="grid">
-
-      <div>
-        <div class="label">Politiker</div>
-        <div class="value">
-          ${esc(x.politician||'—')}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Kaufbetrag</div>
-        <div class="value">
-          ${money(x.amount_min)}
-          –
-          ${money(x.amount_max)}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Trade</div>
-        <div class="value">
-          ${dt(x.transaction_date)}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Disclosure Lag</div>
-        <div class="value">
-          ${esc(x.disclosure_lag_days??'—')}
-          Tage
-        </div>
-      </div>
-
-    </div>
-
-    <div class="section why">
-      ${esc(
-        x.summary||
-        'Keine Kurzbegründung gespeichert.'
-      )}
-    </div>
-
-  </article>
-
-  `).join('')
-  ||
-  '<div class="card muted">Keine Politiker-Käufe gefunden.</div>';
-
-}
-
-function renderInsiders(data){
-
-  $('results').innerHTML=
-  data.map(x=>`
-
-  <article class="item">
-
-    <div class="top">
-
-      <div>
-
-        <div class="ticker">
-          ${esc(x.ticker)}
-        </div>
-
-        <div class="muted">
-          ${esc(x.company_name||'')}
-        </div>
-
-        <span class="badge">
-          INSIDER-KAUF
-        </span>
-
-      </div>
-
-      <div class="score">
-        ${money(x.value_usd)}
-      </div>
-
-    </div>
-
-    <div class="grid">
-
-      <div>
-        <div class="label">Insider</div>
-        <div class="value">
-          ${esc(x.insider_name||'—')}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Rolle</div>
-        <div class="value">
-          ${esc(x.insider_title||'—')}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Aktien</div>
-        <div class="value">
-          ${numberFmt(x.shares)}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Preis</div>
-        <div class="value">
-          ${
-            x.price==null
-            ?'—'
-            :'$'+Number(x.price).toFixed(2)
-          }
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Trade-Datum</div>
-        <div class="value">
-          ${dt(x.transaction_date)}
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Form-4-Meldung</div>
-        <div class="value">
-          ${dt(x.filing_date)}
-        </div>
-      </div>
-
-    </div>
-
-  </article>
-
-  `).join('')
-  ||
-  '<div class="card muted">Keine Insider-Käufe gefunden.</div>';
-
-}
-
-function renderConvergence(data){
-
-  $('results').innerHTML=
-  data.map(x=>`
-
-  <article class="item">
-
-    <div class="top">
-
-      <div>
-
-        <div class="ticker">
-          ${esc(x.ticker)}
-        </div>
-
-        <div class="muted">
-          Politiker + Unternehmensinsider
-        </div>
-
-        <span class="badge">
-          DOPPELSIGNAL
-        </span>
-
-      </div>
-
-      <div class="score">
-        ${esc(x.convergence_score??'—')}
-      </div>
-
-    </div>
-
-    <div class="grid">
-
-      <div>
-        <div class="label">Zeitfenster</div>
-        <div class="value">
-          ${esc(x.window_days??30)}
-          Tage
-        </div>
-      </div>
-
-      <div>
-        <div class="label">Erkannt</div>
-        <div class="value">
-          ${dt(x.detected_at)}
-        </div>
-      </div>
-
-    </div>
-
-    <div class="section why">
-
-      ${esc(
-        x.summary||
-        'Politiker-Kauf und Insider-Kauf sind beim selben Unternehmen zusammengetroffen.'
-      )}
-
-    </div>
-
-  </article>
-
-  `).join('')
-  ||
-  '<div class="card muted">Noch keine Doppelsignale gefunden.</div>';
-
-}
-
-document
-.querySelectorAll('.tab')
-.forEach(btn=>{
-  btn.addEventListener(
-    'click',
-    ()=>setTab(btn.dataset.tab)
-  );
-});
-
-$('load').onclick=loadData;
-
-$('ticker')
-.addEventListener(
-'keydown',
-e=>{
-  if(e.key==='Enter'){
-    loadData();
-  }
-});
-
-loadData();
-
-</script>
-
-</main>
-</body>
-</html>
+  `<div class="card muted">
+  Keine Gesa
