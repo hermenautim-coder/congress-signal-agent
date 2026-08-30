@@ -50,7 +50,7 @@ h1{
 
 .tabs{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:1fr 1fr;
   gap:8px;
   margin:16px 0;
 }
@@ -59,7 +59,7 @@ h1{
   border:1px solid var(--border);
   background:var(--input);
   color:white;
-  min-height:46px;
+  min-height:48px;
   border-radius:12px;
   font-weight:750;
   cursor:pointer;
@@ -120,7 +120,7 @@ button{
 }
 
 .ticker{
-  font-size:22px;
+  font-size:23px;
   font-weight:850;
 }
 
@@ -161,11 +161,16 @@ button{
   color:#ffb4b4;
 }
 
-.hidden{
-  display:none;
+.priority{
+  text-transform:uppercase;
+  font-weight:750;
 }
 
 @media(min-width:620px){
+  .tabs{
+    grid-template-columns:repeat(4,1fr);
+  }
+
   .controls{
     grid-template-columns:1.1fr .8fr 1fr;
   }
@@ -182,29 +187,54 @@ button{
 
 <h1>Investment Signal Agent</h1>
 <div class="muted">
-Congressional Trades · Insider Buying · Convergence
+Politiker-Käufe · Insider-Käufe · automatische Gesamtbewertung
 </div>
 
 <div class="tabs">
-  <button class="tab active" data-tab="signals">Signals</button>
-  <button class="tab" data-tab="insiders">Insider Buys</button>
-  <button class="tab" data-tab="convergence">Convergence</button>
+  <button class="tab active" data-tab="overview">
+    Gesamtbewertung
+  </button>
+
+  <button class="tab" data-tab="signals">
+    Politiker-Käufe
+  </button>
+
+  <button class="tab" data-tab="insiders">
+    Insider-Käufe
+  </button>
+
+  <button class="tab" data-tab="convergence">
+    Doppelsignal
+  </button>
 </div>
 
-<div id="signalControls" class="card controls">
+<div class="card controls">
 
   <div class="field">
     <label>Ticker</label>
-    <input id="ticker" placeholder="optional, z. B. NVDA">
+    <input
+      id="ticker"
+      placeholder="optional, z. B. NVDA"
+    >
   </div>
 
   <div class="field">
-    <label>Mindestscore</label>
-    <input id="score" type="number" min="0" max="12" value="0">
+    <label id="scoreLabel">
+      Mindest-Gesamtscore
+    </label>
+
+    <input
+      id="score"
+      type="number"
+      min="0"
+      max="100"
+      value="0"
+    >
   </div>
 
   <div class="field">
     <label>Zeitraum</label>
+
     <select id="days">
       <option value="30">30 Tage</option>
       <option value="90">90 Tage</option>
@@ -213,7 +243,9 @@ Congressional Trades · Insider Buying · Convergence
     </select>
   </div>
 
-  <button id="load">Daten laden</button>
+  <button id="load">
+    Daten laden
+  </button>
 
 </div>
 
@@ -224,57 +256,95 @@ Lade Daten …
 <div id="results"></div>
 
 <script>
+
 const API =
-  'https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
+'https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
 
-const $ = id => document.getElementById(id);
+const $ =
+id => document.getElementById(id);
 
-let activeTab = 'signals';
+let activeTab = 'overview';
 
 const esc = s =>
-  String(s ?? '')
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
+String(s ?? '')
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;')
+.replaceAll('"','&quot;')
+.replaceAll("'","&#039;");
 
 const money = n =>
-  n == null
-    ? '—'
-    : new Intl.NumberFormat(
-        'en-US',
-        {
-          style:'currency',
-          currency:'USD',
-          maximumFractionDigits:0
-        }
-      ).format(Number(n));
+n == null
+? '—'
+: new Intl.NumberFormat(
+'en-US',
+{
+style:'currency',
+currency:'USD',
+maximumFractionDigits:0
+}
+).format(Number(n));
 
 const numberFmt = n =>
-  n == null
-    ? '—'
-    : new Intl.NumberFormat('en-US').format(Number(n));
+n == null
+? '—'
+: new Intl.NumberFormat('en-US')
+.format(Number(n));
 
 const dt = v =>
-  v
-    ? new Date(v).toLocaleDateString('de-DE')
-    : '—';
+v
+? new Date(v).toLocaleDateString('de-DE')
+: '—';
 
 function setTab(tab){
+
   activeTab = tab;
 
-  document.querySelectorAll('.tab').forEach(btn => {
+  document
+  .querySelectorAll('.tab')
+  .forEach(btn => {
+
     btn.classList.toggle(
       'active',
       btn.dataset.tab === tab
     );
+
   });
 
-  if(tab === 'signals'){
+  if(tab === 'overview'){
+
     $('score').disabled = false;
-  }else{
+    $('score').min = 0;
+    $('score').max = 100;
+    $('score').value = 0;
+
+    $('scoreLabel').textContent =
+      'Mindest-Gesamtscore';
+
+  }
+
+  if(tab === 'signals'){
+
+    $('score').disabled = false;
+    $('score').min = 0;
+    $('score').max = 13;
+    $('score').value = 0;
+
+    $('scoreLabel').textContent =
+      'Mindestscore Politiker-Signal';
+
+  }
+
+  if(
+    tab === 'insiders' ||
+    tab === 'convergence'
+  ){
+
     $('score').disabled = true;
+
+    $('scoreLabel').textContent =
+      'Score-Filter hier nicht nötig';
+
   }
 
   loadData();
@@ -282,48 +352,74 @@ function setTab(tab){
 
 async function loadData(){
 
-  $('status').textContent = 'Lade Daten …';
+  $('status').textContent =
+    'Lade Daten …';
+
   $('results').innerHTML = '';
 
-  const q = new URLSearchParams({
-    api: activeTab,
-    days: $('days').value
-  });
+  const q =
+    new URLSearchParams({
+      api:activeTab,
+      days:$('days').value
+    });
 
   const ticker =
-    $('ticker').value.trim().toUpperCase();
+    $('ticker')
+    .value
+    .trim()
+    .toUpperCase();
 
   if(ticker){
-    q.set('ticker', ticker);
+    q.set('ticker',ticker);
+  }
+
+  if(activeTab === 'overview'){
+
+    q.set(
+      'min_combined',
+      $('score').value || '0'
+    );
+
   }
 
   if(activeTab === 'signals'){
+
     q.set(
       'min_score',
       $('score').value || '0'
     );
+
   }
 
   try{
 
     const r =
-      await fetch(`${API}?${q.toString()}`);
+      await fetch(
+        `${API}?${q.toString()}`
+      );
 
     if(!r.ok){
 
       $('status').innerHTML =
-        `<span class="error">
-        API-Fehler (${r.status})
-        </span>`;
+      `<span class="error">
+      API-Fehler (${r.status})
+      </span>`;
 
       return;
     }
 
-    const j = await r.json();
-    const data = j.data || [];
+    const j =
+      await r.json();
+
+    const data =
+      j.data || [];
 
     $('status').innerHTML =
       `<b>${data.length}</b> Einträge gefunden`;
+
+    if(activeTab === 'overview'){
+      renderOverview(data);
+    }
 
     if(activeTab === 'signals'){
       renderSignals(data);
@@ -341,301 +437,564 @@ async function loadData(){
   catch(e){
 
     $('status').innerHTML =
-      `<span class="error">
-      Verbindungsfehler:
-      ${esc(e.message || e)}
-      </span>`;
+    `<span class="error">
+    Verbindungsfehler:
+    ${esc(e.message || e)}
+    </span>`;
+
   }
+}
+
+function renderOverview(data){
+
+  $('results').innerHTML =
+  data.map(x => `
+
+  <article class="item">
+
+    <div class="top">
+
+      <div>
+
+        <div class="ticker">
+          ${esc(x.ticker)}
+        </div>
+
+        <div class="muted">
+          ${esc(x.company_name || '')}
+        </div>
+
+        <span class="badge">
+          GESAMTBEWERTUNG
+        </span>
+
+        ${
+          x.overlap_30d
+          ? '<span class="badge">DOPPELSIGNAL</span>'
+          : ''
+        }
+
+      </div>
+
+      <div class="score">
+        ${esc(x.combined_score ?? 0)}/100
+      </div>
+
+    </div>
+
+    <div class="grid">
+
+      <div>
+        <div class="label">
+          Priorität
+        </div>
+
+        <div class="value priority">
+          ${esc(
+            x.combined_priority || 'watch'
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Letzte Aktivität
+        </div>
+
+        <div class="value">
+          ${dt(x.latest_activity_at)}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Politiker-Score
+        </div>
+
+        <div class="value">
+          ${
+            x.congressional_score == null
+            ? 'Kein aktuelles Signal'
+            : esc(x.congressional_score)
+              + '/'
+              + esc(
+                x.congressional_score_max
+                || 12
+              )
+          }
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Politiker
+        </div>
+
+        <div class="value">
+          ${esc(
+            x.politician || '—'
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Insider
+        </div>
+
+        <div class="value">
+          ${esc(
+            x.insider_name || '—'
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Insider-Rolle
+        </div>
+
+        <div class="value">
+          ${esc(
+            x.insider_title || '—'
+          )}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Insider-Kauf
+        </div>
+
+        <div class="value">
+          ${
+            x.insider_value_usd == null
+            ? '—'
+            : money(x.insider_value_usd)
+          }
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Abstand der Signale
+        </div>
+
+        <div class="value">
+          ${
+            x.days_between_signals == null
+            ? '—'
+            : esc(x.days_between_signals)
+              + ' Tage'
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <div class="why">
+
+      ${
+        x.overlap_30d
+        ? '<b>Doppelsignal:</b> Politiker-Kauf und Insider-Kauf liegen innerhalb von 30 Tagen.<br><br>'
+        : ''
+      }
+
+      ${
+        x.congressional_summary
+        ? '<b>Politiker-Signal:</b> '
+          + esc(x.congressional_summary)
+          + '<br><br>'
+        : ''
+      }
+
+      ${
+        x.insider_name
+        ? '<b>Insider-Signal:</b> '
+          + esc(x.insider_name)
+          + ' (' +
+          esc(x.insider_title || 'Insider')
+          + ') kaufte Aktien im Wert von '
+          + money(x.insider_value_usd)
+          + '.'
+        : ''
+      }
+
+      ${
+        !x.congressional_summary &&
+        !x.insider_name
+        ? 'Keine zusätzlichen Details verfügbar.'
+        : ''
+      }
+
+    </div>
+
+  </article>
+
+  `).join('')
+  ||
+  '<div class="card muted">Keine Gesamtbewertungen gefunden.</div>';
+
 }
 
 function renderSignals(data){
 
   $('results').innerHTML =
-    data.map(x => `
+  data.map(x => `
 
-    <article class="item">
+  <article class="item">
 
-      <div class="top">
+    <div class="top">
 
-        <div>
+      <div>
 
-          <div class="ticker">
-            ${esc(x.ticker)}
-          </div>
-
-          <div class="muted">
-            ${esc(x.company_name || '')}
-          </div>
-
-          <span class="badge">
-            ${esc(
-              (x.score_model_version || 'v1').toUpperCase()
-            )}
-            ${x.alerted ? ' · ALERT' : ''}
-          </span>
-
+        <div class="ticker">
+          ${esc(x.ticker)}
         </div>
 
-        <div class="score">
-          ${esc(x.score)}/${esc(x.score_max || 12)}
+        <div class="muted">
+          ${esc(x.company_name || '')}
         </div>
+
+        <span class="badge">
+          POLITIKER-KAUF
+          ${x.alerted ? ' · ALERT' : ''}
+        </span>
 
       </div>
 
-      <div class="grid">
-
-        <div>
-          <div class="label">Politiker</div>
-          <div class="value">
-            ${esc(x.politician || '—')}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Kaufbetrag</div>
-          <div class="value">
-            ${money(x.amount_min)}
-            –
-            ${money(x.amount_max)}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Trade</div>
-          <div class="value">
-            ${dt(x.transaction_date)}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Disclosure Lag</div>
-          <div class="value">
-            ${esc(x.disclosure_lag_days ?? '—')}
-            Tage
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Kurs seit Trade</div>
-          <div class="value">
-            ${
-              x.post_trade_move_pct == null
-                ? '—'
-                : Number(
-                    x.post_trade_move_pct
-                  ).toFixed(1) + ' %'
-            }
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Signal-Datum</div>
-          <div class="value">
-            ${dt(x.signal_date)}
-          </div>
-        </div>
-
+      <div class="score">
+        ${esc(x.score)}/${esc(x.score_max || 12)}
       </div>
 
-      <div class="why">
-        ${esc(
-          x.summary ||
-          'Keine Kurzbegründung gespeichert.'
-        )}
+    </div>
+
+    <div class="grid">
+
+      <div>
+        <div class="label">
+          Politiker
+        </div>
+
+        <div class="value">
+          ${esc(x.politician || '—')}
+        </div>
       </div>
 
-    </article>
+      <div>
+        <div class="label">
+          Kaufbetrag
+        </div>
+
+        <div class="value">
+          ${money(x.amount_min)}
+          –
+          ${money(x.amount_max)}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Trade
+        </div>
+
+        <div class="value">
+          ${dt(x.transaction_date)}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Disclosure Lag
+        </div>
+
+        <div class="value">
+          ${esc(
+            x.disclosure_lag_days ?? '—'
+          )}
+          Tage
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Kurs seit Trade
+        </div>
+
+        <div class="value">
+
+          ${
+            x.post_trade_move_pct == null
+            ? '—'
+            : Number(
+                x.post_trade_move_pct
+              ).toFixed(1)
+              + ' %'
+          }
+
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Signal-Datum
+        </div>
+
+        <div class="value">
+          ${dt(x.signal_date)}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="why">
+
+      ${esc(
+        x.summary ||
+        'Keine Kurzbegründung gespeichert.'
+      )}
+
+    </div>
+
+  </article>
 
   `).join('')
   ||
-  '<div class="card muted">Keine passenden Signals gefunden.</div>';
+  '<div class="card muted">Keine Politiker-Käufe gefunden.</div>';
+
 }
 
 function renderInsiders(data){
 
   $('results').innerHTML =
-    data.map(x => `
+  data.map(x => `
 
-    <article class="item">
+  <article class="item">
 
-      <div class="top">
+    <div class="top">
 
-        <div>
+      <div>
 
-          <div class="ticker">
-            ${esc(x.ticker)}
-          </div>
-
-          <div class="muted">
-            ${esc(x.company_name || '')}
-          </div>
-
-          <span class="badge">
-            Insider Buy
-          </span>
-
+        <div class="ticker">
+          ${esc(x.ticker)}
         </div>
 
-        <div class="score">
-          ${money(x.value_usd)}
+        <div class="muted">
+          ${esc(x.company_name || '')}
         </div>
+
+        <span class="badge">
+          INSIDER-KAUF
+        </span>
 
       </div>
 
-      <div class="grid">
-
-        <div>
-          <div class="label">Insider</div>
-          <div class="value">
-            ${esc(x.insider_name || '—')}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Rolle</div>
-          <div class="value">
-            ${esc(x.insider_title || '—')}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Aktien</div>
-          <div class="value">
-            ${numberFmt(x.shares)}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Preis</div>
-          <div class="value">
-            ${
-              x.price == null
-                ? '—'
-                : '$' + Number(x.price).toFixed(2)
-            }
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Trade-Datum</div>
-          <div class="value">
-            ${dt(x.transaction_date)}
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Form 4 Filing</div>
-          <div class="value">
-            ${dt(x.filing_date)}
-          </div>
-        </div>
-
+      <div class="score">
+        ${money(x.value_usd)}
       </div>
 
-      <div class="why">
-        Echter Open-Market-Insiderkauf.
-        ${
-          x.source_name
-            ? 'Quelle: ' + esc(x.source_name)
-            : ''
-        }
+    </div>
+
+    <div class="grid">
+
+      <div>
+        <div class="label">
+          Insider
+        </div>
+
+        <div class="value">
+          ${esc(x.insider_name || '—')}
+        </div>
       </div>
 
-    </article>
+      <div>
+        <div class="label">
+          Rolle
+        </div>
+
+        <div class="value">
+          ${esc(x.insider_title || '—')}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Aktien
+        </div>
+
+        <div class="value">
+          ${numberFmt(x.shares)}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Preis
+        </div>
+
+        <div class="value">
+
+          ${
+            x.price == null
+            ? '—'
+            : '$'
+              + Number(x.price)
+              .toFixed(2)
+          }
+
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Trade-Datum
+        </div>
+
+        <div class="value">
+          ${dt(x.transaction_date)}
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Form-4-Meldung
+        </div>
+
+        <div class="value">
+          ${dt(x.filing_date)}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="why">
+
+      Echter Open-Market-Kauf eines Unternehmensinsiders.
+
+      ${
+        x.source_name
+        ? '<br>Quelle: '
+          + esc(x.source_name)
+        : ''
+      }
+
+    </div>
+
+  </article>
 
   `).join('')
   ||
-  '<div class="card muted">Keine Insider Buys gefunden.</div>';
+  '<div class="card muted">Keine Insider-Käufe gefunden.</div>';
+
 }
 
 function renderConvergence(data){
 
   $('results').innerHTML =
-    data.map(x => `
+  data.map(x => `
 
-    <article class="item">
+  <article class="item">
 
-      <div class="top">
+    <div class="top">
 
-        <div>
+      <div>
 
-          <div class="ticker">
-            ${esc(x.ticker)}
-          </div>
-
-          <div class="muted">
-            Congressional + Insider
-          </div>
-
-          <span class="badge">
-            CONVERGENCE
-            ${x.alerted ? ' · ALERT' : ''}
-          </span>
-
+        <div class="ticker">
+          ${esc(x.ticker)}
         </div>
 
-        <div class="score">
-          ${esc(x.convergence_score ?? '—')}
+        <div class="muted">
+          Politiker + Unternehmensinsider
         </div>
+
+        <span class="badge">
+          DOPPELSIGNAL
+          ${x.alerted ? ' · ALERT' : ''}
+        </span>
 
       </div>
 
-      <div class="grid">
-
-        <div>
-          <div class="label">Fenster</div>
-          <div class="value">
-            ${esc(x.window_days ?? 30)}
-            Tage
-          </div>
-        </div>
-
-        <div>
-          <div class="label">Erkannt</div>
-          <div class="value">
-            ${dt(x.detected_at)}
-          </div>
-        </div>
-
-      </div>
-
-      <div class="why">
+      <div class="score">
         ${esc(
-          x.summary ||
-          'Congressional Buying und Corporate Insider Buying sind zusammengetroffen.'
+          x.convergence_score ?? '—'
         )}
       </div>
 
-    </article>
+    </div>
+
+    <div class="grid">
+
+      <div>
+        <div class="label">
+          Zeitfenster
+        </div>
+
+        <div class="value">
+          ${esc(
+            x.window_days ?? 30
+          )}
+          Tage
+        </div>
+      </div>
+
+      <div>
+        <div class="label">
+          Erkannt
+        </div>
+
+        <div class="value">
+          ${dt(x.detected_at)}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="why">
+
+      ${esc(
+        x.summary ||
+        'Politiker-Kauf und Corporate-Insider-Kauf sind beim selben Unternehmen zusammengetroffen.'
+      )}
+
+    </div>
+
+  </article>
 
   `).join('')
   ||
-  '<div class="card muted">Noch keine Convergence Events gefunden.</div>';
+  '<div class="card muted">Noch keine Doppelsignale gefunden.</div>';
+
 }
 
 document
-  .querySelectorAll('.tab')
-  .forEach(btn => {
+.querySelectorAll('.tab')
+.forEach(btn => {
 
-    btn.addEventListener(
-      'click',
-      () => setTab(btn.dataset.tab)
-    );
+  btn.addEventListener(
+    'click',
+    () => setTab(
+      btn.dataset.tab
+    )
+  );
 
-  });
+});
 
-$('load').onclick = loadData;
+$('load').onclick =
+loadData;
 
-$('ticker').addEventListener(
-  'keydown',
-  e => {
-    if(e.key === 'Enter'){
-      loadData();
-    }
+$('ticker')
+.addEventListener(
+'keydown',
+e => {
+
+  if(e.key === 'Enter'){
+    loadData();
   }
-);
+
+});
 
 loadData();
+
 </script>
 
 </main>
