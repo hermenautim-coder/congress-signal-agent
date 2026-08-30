@@ -3,310 +3,639 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Congress Signal Agent</title>
+<title>Investment Signal Agent</title>
 
 <style>
-:root{color-scheme:dark}
-*{box-sizing:border-box}
-body{
-  font-family:system-ui,-apple-system,sans-serif;
-  margin:0;
-  background:#0b1020;
-  color:#eef2ff
+:root{
+  color-scheme:dark;
+  --bg:#0b1020;
+  --card:#121a2f;
+  --border:#263252;
+  --input:#0e1630;
+  --text:#eef2ff;
+  --muted:#a9b7df;
 }
+
+*{box-sizing:border-box}
+
+body{
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+}
+
 main{
   max-width:760px;
   margin:auto;
-  padding:20px 16px 40px
+  padding:18px 14px 40px;
 }
-h1{font-size:30px;margin:4px 0}
-.muted{color:#a9b7df}
 
-.card,.signal{
-  background:#121a2f;
-  border:1px solid #263252;
+h1{
+  font-size:28px;
+  margin:4px 0 4px;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
   border-radius:16px;
-  padding:16px;
-  margin:14px 0
+  padding:15px;
+  margin:14px 0;
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:16px 0;
+}
+
+.tab{
+  border:1px solid var(--border);
+  background:var(--input);
+  color:white;
+  min-height:46px;
+  border-radius:12px;
+  font-weight:750;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:#263252;
 }
 
 .controls{
   display:grid;
-  gap:10px
+  gap:10px;
 }
 
 .field{
   display:flex;
   flex-direction:column;
-  gap:5px
+  gap:5px;
 }
 
-.field label,.label{
+label,
+.label{
+  color:var(--muted);
   font-size:12px;
-  color:#a9b7df
 }
 
-input,select,button{
+input,
+select,
+button{
   width:100%;
-  min-height:50px;
+  min-height:48px;
   border-radius:11px;
   border:1px solid #3a486e;
-  background:#0e1630;
+  background:var(--input);
   color:white;
-  padding:0 14px;
-  font:inherit
+  padding:0 13px;
+  font:inherit;
 }
 
 button{
+  cursor:pointer;
   font-weight:750;
-  cursor:pointer
+}
+
+.item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:15px;
+  margin:12px 0;
 }
 
 .top{
   display:flex;
   justify-content:space-between;
-  gap:12px
+  align-items:flex-start;
+  gap:14px;
 }
 
-.ticker,.score{
+.ticker{
   font-size:22px;
-  font-weight:850
+  font-weight:850;
+}
+
+.score{
+  font-size:22px;
+  font-weight:850;
+  white-space:nowrap;
 }
 
 .badge{
   display:inline-block;
+  margin-top:5px;
   padding:3px 8px;
   border:1px solid #3a486e;
   border-radius:999px;
   font-size:12px;
-  margin-top:5px
 }
 
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
-  margin-top:14px
+  margin-top:14px;
+}
+
+.value{
+  margin-top:2px;
 }
 
 .why{
   margin-top:14px;
   padding-top:12px;
   border-top:1px solid #27324f;
-  line-height:1.45
+  line-height:1.45;
 }
 
-.error{color:#ffb4b4}
+.error{
+  color:#ffb4b4;
+}
+
+.hidden{
+  display:none;
+}
+
+@media(min-width:620px){
+  .controls{
+    grid-template-columns:1.1fr .8fr 1fr;
+  }
+
+  .controls button{
+    grid-column:1/-1;
+  }
+}
 </style>
 </head>
 
 <body>
 <main>
 
-<h1>Congress Signal Agent</h1>
+<h1>Investment Signal Agent</h1>
 <div class="muted">
-Research-Dashboard · Congressional Trades · Score V2
+Congressional Trades · Insider Buying · Convergence
 </div>
 
-<div class="card controls">
-
-<div class="field">
-<label>Ticker</label>
-<input id="ticker" placeholder="optional, z. B. NVDA">
+<div class="tabs">
+  <button class="tab active" data-tab="signals">Signals</button>
+  <button class="tab" data-tab="insiders">Insider Buys</button>
+  <button class="tab" data-tab="convergence">Convergence</button>
 </div>
 
-<div class="field">
-<label>Mindestscore</label>
-<input id="score" type="number" min="0" max="12" value="0">
-</div>
+<div id="signalControls" class="card controls">
 
-<div class="field">
-<label>Zeitraum</label>
-<select id="days">
-<option value="30">30 Tage</option>
-<option value="90">90 Tage</option>
-<option value="365">1 Jahr</option>
-<option value="3650">Gesamte Historie</option>
-</select>
-</div>
+  <div class="field">
+    <label>Ticker</label>
+    <input id="ticker" placeholder="optional, z. B. NVDA">
+  </div>
 
-<button id="load">Signale laden</button>
+  <div class="field">
+    <label>Mindestscore</label>
+    <input id="score" type="number" min="0" max="12" value="0">
+  </div>
+
+  <div class="field">
+    <label>Zeitraum</label>
+    <select id="days">
+      <option value="30">30 Tage</option>
+      <option value="90">90 Tage</option>
+      <option value="365">1 Jahr</option>
+      <option value="3650">Gesamte Historie</option>
+    </select>
+  </div>
+
+  <button id="load">Daten laden</button>
 
 </div>
 
 <div id="status" class="card muted">
-Lade Signale …
+Lade Daten …
 </div>
 
-<div id="signals"></div>
+<div id="results"></div>
 
 <script>
-
 const API =
-'https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
+  'https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
 
 const $ = id => document.getElementById(id);
 
+let activeTab = 'signals';
+
 const esc = s =>
-String(s ?? '')
-.replaceAll('&','&amp;')
-.replaceAll('<','&lt;')
-.replaceAll('>','&gt;');
+  String(s ?? '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
 
 const money = n =>
-n == null
-? '—'
-: new Intl.NumberFormat(
-'en-US',
-{
-style:'currency',
-currency:'USD',
-maximumFractionDigits:0
-}).format(Number(n));
+  n == null
+    ? '—'
+    : new Intl.NumberFormat(
+        'en-US',
+        {
+          style:'currency',
+          currency:'USD',
+          maximumFractionDigits:0
+        }
+      ).format(Number(n));
+
+const numberFmt = n =>
+  n == null
+    ? '—'
+    : new Intl.NumberFormat('en-US').format(Number(n));
 
 const dt = v =>
-v ? new Date(v).toLocaleDateString('de-DE') : '—';
+  v
+    ? new Date(v).toLocaleDateString('de-DE')
+    : '—';
 
-async function load(){
+function setTab(tab){
+  activeTab = tab;
 
-$('status').textContent='Lade Signale …';
-$('signals').innerHTML='';
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.classList.toggle(
+      'active',
+      btn.dataset.tab === tab
+    );
+  });
 
-const q = new URLSearchParams({
-api:'signals',
-min_score:$('score').value || '0',
-days:$('days').value
-});
+  if(tab === 'signals'){
+    $('score').disabled = false;
+  }else{
+    $('score').disabled = true;
+  }
 
-const ticker =
-$('ticker').value.trim().toUpperCase();
-
-if(ticker) q.set('ticker',ticker);
-
-try{
-
-const r =
-await fetch(`${API}?${q}`);
-
-if(!r.ok){
-
-$('status').innerHTML =
-`<span class="error">
-API-Fehler (${r.status})
-</span>`;
-
-return;
+  loadData();
 }
 
-const j = await r.json();
-const d = j.data || [];
+async function loadData(){
 
-$('status').innerHTML =
-`<b>${d.length}</b> Signale gefunden`;
+  $('status').textContent = 'Lade Daten …';
+  $('results').innerHTML = '';
 
-$('signals').innerHTML =
-d.map(x => `
+  const q = new URLSearchParams({
+    api: activeTab,
+    days: $('days').value
+  });
 
-<article class="signal">
+  const ticker =
+    $('ticker').value.trim().toUpperCase();
 
-<div class="top">
+  if(ticker){
+    q.set('ticker', ticker);
+  }
 
-<div>
+  if(activeTab === 'signals'){
+    q.set(
+      'min_score',
+      $('score').value || '0'
+    );
+  }
 
-<div class="ticker">
-${esc(x.ticker)}
-</div>
+  try{
 
-<div class="muted">
-${esc(x.company_name || '')}
-</div>
+    const r =
+      await fetch(`${API}?${q.toString()}`);
 
-<span class="badge">
-${esc((x.score_model_version || 'v1').toUpperCase())}
-${x.alerted ? ' · ALERT' : ''}
-</span>
+    if(!r.ok){
 
-</div>
+      $('status').innerHTML =
+        `<span class="error">
+        API-Fehler (${r.status})
+        </span>`;
 
-<div class="score">
-${esc(x.score)}/${esc(x.score_max || 12)}
-</div>
+      return;
+    }
 
-</div>
+    const j = await r.json();
+    const data = j.data || [];
 
-<div class="grid">
+    $('status').innerHTML =
+      `<b>${data.length}</b> Einträge gefunden`;
 
-<div>
-<div class="label">Politiker</div>
-${esc(x.politician || '—')}
-</div>
+    if(activeTab === 'signals'){
+      renderSignals(data);
+    }
 
-<div>
-<div class="label">Kaufbetrag</div>
-${money(x.amount_min)} – ${money(x.amount_max)}
-</div>
+    if(activeTab === 'insiders'){
+      renderInsiders(data);
+    }
 
-<div>
-<div class="label">Trade</div>
-${dt(x.transaction_date)}
-</div>
+    if(activeTab === 'convergence'){
+      renderConvergence(data);
+    }
 
-<div>
-<div class="label">Disclosure Lag</div>
-${esc(x.disclosure_lag_days ?? '—')} Tage
-</div>
+  }
+  catch(e){
 
-<div>
-<div class="label">Kurs seit Trade</div>
-${
-x.post_trade_move_pct == null
-? '—'
-: Number(x.post_trade_move_pct).toFixed(1)+' %'
-}
-</div>
-
-<div>
-<div class="label">Signal-Datum</div>
-${dt(x.signal_date)}
-</div>
-
-</div>
-
-<div class="why">
-${esc(
-x.summary ||
-'Keine Kurzbegründung gespeichert.'
-)}
-</div>
-
-</article>
-
-`).join('')
-||
-'<div class="card muted">Keine passenden Signale gefunden.</div>';
-
-}
-catch(e){
-
-$('status').innerHTML =
-`<span class="error">
-Verbindungsfehler: ${esc(e.message || e)}
-</span>`;
-
+    $('status').innerHTML =
+      `<span class="error">
+      Verbindungsfehler:
+      ${esc(e.message || e)}
+      </span>`;
+  }
 }
 
+function renderSignals(data){
+
+  $('results').innerHTML =
+    data.map(x => `
+
+    <article class="item">
+
+      <div class="top">
+
+        <div>
+
+          <div class="ticker">
+            ${esc(x.ticker)}
+          </div>
+
+          <div class="muted">
+            ${esc(x.company_name || '')}
+          </div>
+
+          <span class="badge">
+            ${esc(
+              (x.score_model_version || 'v1').toUpperCase()
+            )}
+            ${x.alerted ? ' · ALERT' : ''}
+          </span>
+
+        </div>
+
+        <div class="score">
+          ${esc(x.score)}/${esc(x.score_max || 12)}
+        </div>
+
+      </div>
+
+      <div class="grid">
+
+        <div>
+          <div class="label">Politiker</div>
+          <div class="value">
+            ${esc(x.politician || '—')}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Kaufbetrag</div>
+          <div class="value">
+            ${money(x.amount_min)}
+            –
+            ${money(x.amount_max)}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Trade</div>
+          <div class="value">
+            ${dt(x.transaction_date)}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Disclosure Lag</div>
+          <div class="value">
+            ${esc(x.disclosure_lag_days ?? '—')}
+            Tage
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Kurs seit Trade</div>
+          <div class="value">
+            ${
+              x.post_trade_move_pct == null
+                ? '—'
+                : Number(
+                    x.post_trade_move_pct
+                  ).toFixed(1) + ' %'
+            }
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Signal-Datum</div>
+          <div class="value">
+            ${dt(x.signal_date)}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="why">
+        ${esc(
+          x.summary ||
+          'Keine Kurzbegründung gespeichert.'
+        )}
+      </div>
+
+    </article>
+
+  `).join('')
+  ||
+  '<div class="card muted">Keine passenden Signals gefunden.</div>';
 }
 
-$('load').onclick = load;
+function renderInsiders(data){
+
+  $('results').innerHTML =
+    data.map(x => `
+
+    <article class="item">
+
+      <div class="top">
+
+        <div>
+
+          <div class="ticker">
+            ${esc(x.ticker)}
+          </div>
+
+          <div class="muted">
+            ${esc(x.company_name || '')}
+          </div>
+
+          <span class="badge">
+            Insider Buy
+          </span>
+
+        </div>
+
+        <div class="score">
+          ${money(x.value_usd)}
+        </div>
+
+      </div>
+
+      <div class="grid">
+
+        <div>
+          <div class="label">Insider</div>
+          <div class="value">
+            ${esc(x.insider_name || '—')}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Rolle</div>
+          <div class="value">
+            ${esc(x.insider_title || '—')}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Aktien</div>
+          <div class="value">
+            ${numberFmt(x.shares)}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Preis</div>
+          <div class="value">
+            ${
+              x.price == null
+                ? '—'
+                : '$' + Number(x.price).toFixed(2)
+            }
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Trade-Datum</div>
+          <div class="value">
+            ${dt(x.transaction_date)}
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Form 4 Filing</div>
+          <div class="value">
+            ${dt(x.filing_date)}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="why">
+        Echter Open-Market-Insiderkauf.
+        ${
+          x.source_name
+            ? 'Quelle: ' + esc(x.source_name)
+            : ''
+        }
+      </div>
+
+    </article>
+
+  `).join('')
+  ||
+  '<div class="card muted">Keine Insider Buys gefunden.</div>';
+}
+
+function renderConvergence(data){
+
+  $('results').innerHTML =
+    data.map(x => `
+
+    <article class="item">
+
+      <div class="top">
+
+        <div>
+
+          <div class="ticker">
+            ${esc(x.ticker)}
+          </div>
+
+          <div class="muted">
+            Congressional + Insider
+          </div>
+
+          <span class="badge">
+            CONVERGENCE
+            ${x.alerted ? ' · ALERT' : ''}
+          </span>
+
+        </div>
+
+        <div class="score">
+          ${esc(x.convergence_score ?? '—')}
+        </div>
+
+      </div>
+
+      <div class="grid">
+
+        <div>
+          <div class="label">Fenster</div>
+          <div class="value">
+            ${esc(x.window_days ?? 30)}
+            Tage
+          </div>
+        </div>
+
+        <div>
+          <div class="label">Erkannt</div>
+          <div class="value">
+            ${dt(x.detected_at)}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="why">
+        ${esc(
+          x.summary ||
+          'Congressional Buying und Corporate Insider Buying sind zusammengetroffen.'
+        )}
+      </div>
+
+    </article>
+
+  `).join('')
+  ||
+  '<div class="card muted">Noch keine Convergence Events gefunden.</div>';
+}
+
+document
+  .querySelectorAll('.tab')
+  .forEach(btn => {
+
+    btn.addEventListener(
+      'click',
+      () => setTab(btn.dataset.tab)
+    );
+
+  });
+
+$('load').onclick = loadData;
 
 $('ticker').addEventListener(
-'keydown',
-e => {
-if(e.key === 'Enter') load();
-});
+  'keydown',
+  e => {
+    if(e.key === 'Enter'){
+      loadData();
+    }
+  }
+);
 
-load();
-
+loadData();
 </script>
 
 </main>
