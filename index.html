@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Congress Signal Agent</title>
+
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{
+  font-family:system-ui,-apple-system,sans-serif;
+  margin:0;
+  background:#0b1020;
+  color:#eef2ff
+}
+main{
+  max-width:760px;
+  margin:auto;
+  padding:20px 16px 40px
+}
+h1{font-size:30px;margin:4px 0}
+.muted{color:#a9b7df}
+
+.card,.signal{
+  background:#121a2f;
+  border:1px solid #263252;
+  border-radius:16px;
+  padding:16px;
+  margin:14px 0
+}
+
+.controls{
+  display:grid;
+  gap:10px
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:5px
+}
+
+.field label,.label{
+  font-size:12px;
+  color:#a9b7df
+}
+
+input,select,button{
+  width:100%;
+  min-height:50px;
+  border-radius:11px;
+  border:1px solid #3a486e;
+  background:#0e1630;
+  color:white;
+  padding:0 14px;
+  font:inherit
+}
+
+button{
+  font-weight:750;
+  cursor:pointer
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px
+}
+
+.ticker,.score{
+  font-size:22px;
+  font-weight:850
+}
+
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border:1px solid #3a486e;
+  border-radius:999px;
+  font-size:12px;
+  margin-top:5px
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:14px
+}
+
+.why{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #27324f;
+  line-height:1.45
+}
+
+.error{color:#ffb4b4}
+</style>
+</head>
+
+<body>
+<main>
+
+<h1>Congress Signal Agent</h1>
+<div class="muted">
+Research-Dashboard · Congressional Trades · Score V2
+</div>
+
+<div class="card controls">
+
+<div class="field">
+<label>Ticker</label>
+<input id="ticker" placeholder="optional, z. B. NVDA">
+</div>
+
+<div class="field">
+<label>Mindestscore</label>
+<input id="score" type="number" min="0" max="12" value="0">
+</div>
+
+<div class="field">
+<label>Zeitraum</label>
+<select id="days">
+<option value="30">30 Tage</option>
+<option value="90">90 Tage</option>
+<option value="365">1 Jahr</option>
+<option value="3650">Gesamte Historie</option>
+</select>
+</div>
+
+<button id="load">Signale laden</button>
+
+</div>
+
+<div id="status" class="card muted">
+Lade Signale …
+</div>
+
+<div id="signals"></div>
+
+<script>
+
+const API =
+'https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
+
+const $ = id => document.getElementById(id);
+
+const esc = s =>
+String(s ?? '')
+.replaceAll('&','&amp;')
+.replaceAll('<','&lt;')
+.replaceAll('>','&gt;');
+
+const money = n =>
+n == null
+? '—'
+: new Intl.NumberFormat(
+'en-US',
+{
+style:'currency',
+currency:'USD',
+maximumFractionDigits:0
+}).format(Number(n));
+
+const dt = v =>
+v ? new Date(v).toLocaleDateString('de-DE') : '—';
+
+async function load(){
+
+$('status').textContent='Lade Signale …';
+$('signals').innerHTML='';
+
+const q = new URLSearchParams({
+api:'signals',
+min_score:$('score').value || '0',
+days:$('days').value
+});
+
+const ticker =
+$('ticker').value.trim().toUpperCase();
+
+if(ticker) q.set('ticker',ticker);
+
+try{
+
+const r =
+await fetch(`${API}?${q}`);
+
+if(!r.ok){
+
+$('status').innerHTML =
+`<span class="error">
+API-Fehler (${r.status})
+</span>`;
+
+return;
+}
+
+const j = await r.json();
+const d = j.data || [];
+
+$('status').innerHTML =
+`<b>${d.length}</b> Signale gefunden`;
+
+$('signals').innerHTML =
+d.map(x => `
+
+<article class="signal">
+
+<div class="top">
+
+<div>
+
+<div class="ticker">
+${esc(x.ticker)}
+</div>
+
+<div class="muted">
+${esc(x.company_name || '')}
+</div>
+
+<span class="badge">
+${esc((x.score_model_version || 'v1').toUpperCase())}
+${x.alerted ? ' · ALERT' : ''}
+</span>
+
+</div>
+
+<div class="score">
+${esc(x.score)}/${esc(x.score_max || 12)}
+</div>
+
+</div>
+
+<div class="grid">
+
+<div>
+<div class="label">Politiker</div>
+${esc(x.politician || '—')}
+</div>
+
+<div>
+<div class="label">Kaufbetrag</div>
+${money(x.amount_min)} – ${money(x.amount_max)}
+</div>
+
+<div>
+<div class="label">Trade</div>
+${dt(x.transaction_date)}
+</div>
+
+<div>
+<div class="label">Disclosure Lag</div>
+${esc(x.disclosure_lag_days ?? '—')} Tage
+</div>
+
+<div>
+<div class="label">Kurs seit Trade</div>
+${
+x.post_trade_move_pct == null
+? '—'
+: Number(x.post_trade_move_pct).toFixed(1)+' %'
+}
+</div>
+
+<div>
+<div class="label">Signal-Datum</div>
+${dt(x.signal_date)}
+</div>
+
+</div>
+
+<div class="why">
+${esc(
+x.summary ||
+'Keine Kurzbegründung gespeichert.'
+)}
+</div>
+
+</article>
+
+`).join('')
+||
+'<div class="card muted">Keine passenden Signale gefunden.</div>';
+
+}
+catch(e){
+
+$('status').innerHTML =
+`<span class="error">
+Verbindungsfehler: ${esc(e.message || e)}
+</span>`;
+
+}
+
+}
+
+$('load').onclick = load;
+
+$('ticker').addEventListener(
+'keydown',
+e => {
+if(e.key === 'Enter') load();
+});
+
+load();
+
+</script>
+
+</main>
+</body>
+</html>
