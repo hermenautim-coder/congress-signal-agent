@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Investment Signal Agent V5</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--card:#121a2f;--border:#263252;--input:#0e1630;--text:#eef2ff;--muted:#a9b7df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:780px;margin:auto;padding:18px 14px 45px}h1{font-size:28px;margin:4px 0}.muted{color:var(--muted)}
+.card,.item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:15px;margin:13px 0}
+details.card{padding:0;overflow:hidden}summary{cursor:pointer;list-style:none;padding:15px;font-weight:800}summary::-webkit-details-marker{display:none}
+summary:after{content:"＋";float:right;color:var(--muted)}details[open] summary:after{content:"−"}
+.info{padding:0 15px 15px;line-height:1.5}.info p{margin:8px 0 12px}.info-grid,.grid,.factor-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-box,.factor{background:var(--input);border:1px solid var(--border);border-radius:11px;padding:10px}.info-box b{display:block}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}.tab{min-height:48px}.tab.active{background:#263252}
+.controls{display:grid;gap:10px}.field{display:flex;flex-direction:column;gap:5px}label,.label{font-size:12px;color:var(--muted)}
+input,select,button{width:100%;min-height:48px;border-radius:11px;border:1px solid #3a486e;background:var(--input);color:#fff;padding:0 13px;font:inherit}
+button{cursor:pointer;font-weight:750}.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.ticker{font-size:23px;font-weight:850}
+.score{font-size:23px;font-weight:850;white-space:nowrap}.rating{font-size:13px;font-weight:900;border-width:2px}.opportunity{font-size:30px;font-weight:900}.badge{display:inline-block;margin:5px 5px 0 0;padding:3px 8px;border:1px solid #3a486e;border-radius:999px;font-size:12px}
+.grid{gap:12px;margin-top:14px}.section{margin-top:15px;padding-top:13px;border-top:1px solid #27324f}.section-title{font-size:12px;color:var(--muted);font-weight:750;text-transform:uppercase;margin-bottom:8px}
+.factor-score{font-size:18px;font-weight:800;margin-top:2px}.why{line-height:1.5}.error{color:#ffb4b4}
+@media(min-width:650px){.tabs{grid-template-columns:repeat(4,1fr)}.controls{grid-template-columns:repeat(5,1fr)}.controls button{grid-column:1/-1}.factor-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<main>
+<h1>Investment Signal Agent V5</h1>
+<div class="muted">Politiker · Corporate Insider · Fundamentals · Opportunity Score</div>
+
+<details class="card">
+<summary>Wie funktioniert die Bewertung?</summary>
+<div class="info">
+<p><b>V4-Signal-Score</b> bewertet die Qualität des ursprünglichen Research-Signals. <b>V5 Opportunity Score</b> beantwortet zusätzlich: Ist der Ticker zum aktuellen Stand noch attraktiv?</p>
+<div class="section-title">V4 Signalqualität · 0–100</div>
+<div class="info-grid"><div class="info-box"><b>Politiker</b>0–25</div><div class="info-box"><b>Corporate Insider</b>0–25</div><div class="info-box"><b>Fundamentals</b>0–20</div><div class="info-box"><b>Doppelsignal</b>0–15</div><div class="info-box"><b>Bewertung</b>0–10</div><div class="info-box"><b>Momentum</b>0–5</div></div>
+<div class="section-title">V5 Opportunity Score · 0–100</div>
+<div class="info-grid"><div class="info-box"><b>V4-Signalqualität</b>max. 40</div><div class="info-box"><b>Aktuelle Bewertung</b>max. 25</div><div class="info-box"><b>Fundamentals/Earnings</b>max. 15</div><div class="info-box"><b>Momentum</b>max. 10</div><div class="info-box"><b>Signal-Frische</b>max. 10</div></div>
+<p><b>BUY:</b> Opportunity ≥75, V4 ≥60, Confidence ≥85, Vollständigkeit ≥80 % und keine schwachen Fundamentals/harten Red Flags. <b>WATCH:</b> Opportunity ≥55 mit ausreichender Datenqualität. <b>NEUTRAL:</b> 35–54. <b>AVOID:</b> unter 35 oder gravierende Red Flags.</p>
+<p>Die aktuelle Empfehlung wird in jedem Agentenlauf neu geprüft. Kursbasis, Aktualisierungszeit und Gültigkeit werden gespeichert. Historische Ratings bleiben erhalten und werden später gegen SPY ausgewertet.</p>
+<p><b>Confidence</b> misst die Verlässlichkeit der Datenbasis, nicht die Attraktivität der Aktie. Fehlende Daten werden nicht positiv geschätzt.</p>
+<p class="muted">Research-Unterstützung, keine individuelle Anlageberatung.</p>
+</div>
+</details>
+
+<div class="tabs">
+<button class="tab active" data-tab="overview">Gesamtbewertung</button>
+<button class="tab" data-tab="signals">Politiker-Käufe</button>
+<button class="tab" data-tab="insiders">Insider-Käufe</button>
+<button class="tab" data-tab="convergence">Doppelsignal</button>
+</div>
+
+<div class="card controls">
+<div class="field"><label>Ticker</label><input id="ticker" placeholder="z. B. NVDA"></div>
+<div class="field"><label id="scoreLabel">Min. V4-Score</label><input id="score" type="number" min="0" max="100" value="0"></div>
+<div class="field"><label>Empfehlung</label><select id="rating"><option value="ALL">Alle</option><option>BUY</option><option>WATCH</option><option>NEUTRAL</option><option>AVOID</option></select></div>
+<div class="field"><label>Min. Opportunity</label><input id="opportunity" type="number" min="0" max="100" value="0"></div>
+<div class="field"><label>Zeitraum</label><select id="days"><option value="30">30 Tage</option><option value="90">90 Tage</option><option value="365">1 Jahr</option><option value="3650">Historie</option></select></div>
+<button id="load">Daten laden</button>
+</div>
+
+<div id="status" class="card muted">Lade Daten …</div>
+<div id="results"></div>
+</main>
+
+<script>
+const API='https://lrlfatlkmlgtwbibrhed.supabase.co/functions/v1/research-dashboard';
+const $=id=>document.getElementById(id);
+let activeTab='overview';
+const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;");
+const money=n=>n==null?'—':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(n));
+const num=n=>n==null?'—':new Intl.NumberFormat('en-US').format(Number(n));
+const pct=n=>n==null?'—':Number(n).toFixed(1)+' %';
+const dt=v=>v?new Date(v).toLocaleDateString('de-DE'):'—';
+
+function setTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  const ov=tab==='overview',sig=tab==='signals';
+  $('score').disabled=!ov&&!sig;$('rating').disabled=!ov;$('opportunity').disabled=!ov;
+  $('score').min=0;$('score').max=ov?100:13;$('score').value=0;
+  $('scoreLabel').textContent=ov?'Min. V4-Score':sig?'Min. Politiker-Score':'Score-Filter nicht nötig';
+  loadData();
+}
+
+async function loadData(){
+  $('status').textContent='Lade Daten …';
+  $('results').innerHTML='';
+  const q=new URLSearchParams({api:activeTab,days:$('days').value});
+  const ticker=$('ticker').value.trim().toUpperCase();
+  if(ticker) q.set('ticker',ticker);
+  if(activeTab==='overview') q.set('min_combined',$('score').value||'0');
+  if(activeTab==='signals') q.set('min_score',$('score').value||'0');
+
+  try{
+    const r=await fetch(`${API}?${q.toString()}`);
+    if(!r.ok) throw new Error(`API-Fehler (${r.status})`);
+    const j=await r.json(); let data=j.data||[];
+    if(activeTab==='overview'){
+      const rat=$('rating').value,minO=Number($('opportunity').value||0);
+      data=data.filter(x=>(rat==='ALL'||x.current_rating===rat)&&Number(x.opportunity_score||0)>=minO);
+      data.sort((a,b)=>Number(b.opportunity_score||0)-Number(a.opportunity_score||0)||Number(b.combined_score||0)-Number(a.combined_score||0));
+    }
+    $('status').innerHTML=`<b>${data.length}</b> Einträge gefunden`;
+    ({overview:renderOverview,signals:renderSignals,insiders:renderInsiders,convergence:renderConvergence}[activeTab])(data);
+  }catch(e){
+    $('status').innerHTML=`<span class="error">${esc(e.message||e)}</span>`;
+  }
+}
+
+function empty(text){return `<div class="card muted">${text}</div>`;}
+
+function renderOverview(data){
+  $('results').innerHTML=data.map(x=>{
+    let badge='';
+    if(x.combined_score>=75&&x.overlap_30d) badge='<span class="badge">STARKES DOPPELSIGNAL</span>';
+    else if(x.combined_score>=75) badge='<span class="badge">STARKES SIGNAL</span>';
+    else if(x.overlap_30d&&x.combined_score>=60) badge='<span class="badge">DOPPELSIGNAL</span>';
+
+    return `<article class="item">
+      <div class="top">
+        <div>
+          <div class="ticker">${esc(x.ticker)}</div>
+          <div class="muted">${esc(x.company_name||'')}</div>
+          <span class="badge">${x.quality_model_version==='v4'?'V4':'LEGACY'}</span>${x.current_rating?`<span class="badge rating">${esc(x.current_rating)}</span>`:''}${badge}
+        </div>
+        <div><div class="label">Opportunity</div><div class="opportunity">${x.opportunity_score==null?'—':esc(x.opportunity_score)+'/100'}</div><div class="label">V4 ${esc(x.combined_score??0)}/100</div></div>
+      </div>
+
+      <div class="grid">
+        <div><div class="label">Confidence</div><div>${x.data_confidence==null?'—':esc(x.data_confidence)+'/100'}</div></div>
+        <div><div class="label">Datenvollständigkeit</div><div>${x.data_completeness==null?'—':esc(x.data_completeness)+' %'}</div></div>
+        <div><div class="label">Rating aktualisiert</div><div>${x.recommendation_updated_at?new Date(x.recommendation_updated_at).toLocaleString('de-DE'):'—'}</div></div>
+        <div><div class="label">Kursbasis Rating</div><div>${x.price_at_rating==null?'—':'$'+Number(x.price_at_rating).toFixed(2)}</div></div>
+      </div>
+      ${x.opportunity_score!=null?`<div class="section"><div class="section-title">Opportunity-Komponenten</div><div class="factor-grid">
+        <div class="factor"><div class="label">V4-Basis</div><div class="factor-score">${esc(x.opportunity_v4_component??0)}/40</div></div>
+        <div class="factor"><div class="label">Bewertung</div><div class="factor-score">${esc(x.opportunity_valuation_component??0)}/25</div></div>
+        <div class="factor"><div class="label">Fundamentals</div><div class="factor-score">${esc(x.opportunity_fundamentals_component??0)}/15</div></div>
+        <div class="factor"><div class="label">Momentum</div><div class="factor-score">${esc(x.opportunity_momentum_component??0)}/10</div></div>
+        <div class="factor"><div class="label">Frische</div><div class="factor-score">${esc(x.opportunity_freshness_component??0)}/10</div></div>
+        <div class="factor"><div class="label">Abzüge</div><div class="factor-score">-${esc(x.opportunity_penalties??0)}</div></div>
+      </div></div>`:''}
+      ${x.recommendation_reason?`<div class="section why"><div class="section-title">Aktuelle Einschätzung</div>${esc(x.recommendation_reason)}</div>`:''}
+      ${x.recommendation_risk?`<div class="section why"><div class="section-title">Hauptrisiko</div>${esc(x.recommendation_risk)}</div>`:''}
+
+      ${x.quality_model_version==='v4'?`
+      <div class="section">
+        <div class="section-title">V4 Score-Komponenten</div>
+        <div class="factor-grid">
+          <div class="factor"><div class="label">Politiker</div><div class="factor-score">${esc(x.politician_score??0)}/25</div></div>
+          <div class="factor"><div class="label">Insider</div><div class="factor-score">${esc(x.insider_score??0)}/25</div></div>
+          <div class="factor"><div class="label">Fundamentals</div><div class="factor-score">${esc(x.fundamentals_score??0)}/20</div></div>
+          <div class="factor"><div class="label">Doppelsignal</div><div class="factor-score">${esc(x.quality_convergence_score??0)}/15</div></div>
+          <div class="factor"><div class="label">Bewertung</div><div class="factor-score">${esc(x.valuation_score??0)}/10</div></div>
+          <div class="factor"><div class="label">Momentum</div><div class="factor-score">${esc(x.momentum_score??0)}/5</div></div>
+        </div>
+      </div>`:''}
+
+      <div class="section">
+        <div class="section-title">Signale</div>
+        <div class="grid">
+          <div><div class="label">Politiker</div><div>${esc(x.politician||'—')}</div></div>
+          <div><div class="label">Politiker-Score</div><div>${x.congressional_score==null?'Kein Signal':esc(x.congressional_score)+'/'+esc(x.congressional_score_max||12)}</div></div>
+          <div><div class="label">Insider</div><div>${esc(x.insider_name||'—')}</div></div>
+          <div><div class="label">Insider-Rolle</div><div>${esc(x.insider_title||'—')}</div></div>
+          <div><div class="label">Insider-Kauf</div><div>${money(x.insider_value_usd)}</div></div>
+          <div><div class="label">Doppelsignal</div><div>${x.overlap_30d?'JA':'Nein'}</div></div>
+        </div>
+      </div>
+
+      ${x.fundamentals_as_of_date?`
+      <div class="section">
+        <div class="section-title">Fundamentals</div>
+        <div class="grid">
+          <div><div class="label">Umsatzwachstum YoY</div><div>${pct(x.revenue_growth_yoy)}</div></div>
+          <div><div class="label">EPS-Wachstum YoY</div><div>${pct(x.eps_growth_yoy)}</div></div>
+          <div><div class="label">Operating Margin</div><div>${pct(x.operating_margin)}</div></div>
+          <div><div class="label">Free Cash Flow</div><div>${money(x.free_cash_flow)}</div></div>
+          <div><div class="label">Guidance</div><div>${esc(x.guidance_direction||'—')}</div></div>
+          <div><div class="label">Stand</div><div>${dt(x.fundamentals_as_of_date)}</div></div>
+        </div>
+      </div>`:''}
+
+      ${x.positive_summary?`<div class="section why"><div class="section-title">Positive Evidenz</div>${esc(x.positive_summary)}</div>`:''}
+      ${x.risk_summary?`<div class="section why"><div class="section-title">Gegenargumente / Risiken</div>${esc(x.risk_summary)}</div>`:''}
+    </article>`;
+  }).join('')||empty('Keine Gesamtbewertungen gefunden.');
+}
+
+function renderSignals(data){
+  $('results').innerHTML=data.map(x=>`<article class="item">
+    <div class="top"><div><div class="ticker">${esc(x.ticker)}</div><div class="muted">${esc(x.company_name||'')}</div><span class="badge">POLITIKER-KAUF</span></div><div class="score">${esc(x.score)}/${esc(x.score_max||12)}</div></div>
+    <div class="grid">
+      <div><div class="label">Politiker</div><div>${esc(x.politician||'—')}</div></div>
+      <div><div class="label">Kaufbetrag</div><div>${money(x.amount_min)} – ${money(x.amount_max)}</div></div>
+      <div><div class="label">Transaktionsdatum</div><div>${dt(x.transaction_date)}</div></div>
+      <div><div class="label">Verzögerung der Meldung</div><div>${esc(x.disclosure_lag_days??'—')} Tage</div></div>
+    </div>
+    <div class="section why">${esc(x.summary||'Keine Kurzbegründung gespeichert.')}</div>
+  </article>`).join('')||empty('Keine Politiker-Käufe gefunden.');
+}
+
+function renderInsiders(data){
+  $('results').innerHTML=data.map(x=>`<article class="item">
+    <div class="top"><div><div class="ticker">${esc(x.ticker)}</div><div class="muted">${esc(x.company_name||'')}</div><span class="badge">INSIDER-KAUF</span></div><div class="score">${money(x.value_usd)}</div></div>
+    <div class="grid">
+      <div><div class="label">Insider</div><div>${esc(x.insider_name||'—')}</div></div>
+      <div><div class="label">Rolle</div><div>${esc(x.insider_title||'—')}</div></div>
+      <div><div class="label">Aktien</div><div>${num(x.shares)}</div></div>
+      <div><div class="label">Preis</div><div>${x.price==null?'—':'$'+Number(x.price).toFixed(2)}</div></div>
+      <div><div class="label">Transaktionsdatum</div><div>${dt(x.transaction_date)}</div></div>
+      <div><div class="label">Form-4-Meldung</div><div>${dt(x.filing_date)}</div></div>
+    </div>
+  </article>`).join('')||empty('Keine Insider-Käufe gefunden.');
+}
+
+function renderConvergence(data){
+  $('results').innerHTML=data.map(x=>`<article class="item">
+    <div class="top"><div><div class="ticker">${esc(x.ticker)}</div><div class="muted">Politiker + Unternehmensinsider</div><span class="badge">DOPPELSIGNAL</span></div><div class="score">${esc(x.convergence_score??'—')}</div></div>
+    <div class="grid">
+      <div><div class="label">Zeitfenster</div><div>${esc(x.window_days??30)} Tage</div></div>
+      <div><div class="label">Erkannt</div><div>${dt(x.detected_at)}</div></div>
+    </div>
+    <div class="section why">${esc(x.summary||'Politiker-Kauf und Insider-Kauf sind beim selben Unternehmen zusammengetroffen.')}</div>
+  </article>`).join('')||empty('Noch keine Doppelsignale gefunden.');
+}
+
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>setTab(btn.dataset.tab)));
+$('load').addEventListener('click',loadData);
+$('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')loadData();});
+loadData();
+</script>
+</body>
+</html>
